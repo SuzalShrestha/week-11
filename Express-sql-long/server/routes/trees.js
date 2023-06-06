@@ -8,6 +8,9 @@ const router = express.Router();
  *   - Database permissions: read/write records in tables
  */
 // Your code here
+const DATA_SOURCE = process.env.DATA_SOURCE;
+const sqlite3= require('sqlite3');
+const db=new sqlite3.Database(DATA_SOURCE,sqlite3.OPEN_READWRITE);
 
 /**
  * BASIC PHASE 2, Step B - List of all trees in the database
@@ -20,6 +23,21 @@ const router = express.Router();
  *   - Ordered by the height_ft from tallest to shortest
  */
 // Your code here
+router.get('/',(req,res,next)=>{
+    const sql = 'SELECT * FROM trees ORDER BY height_ft DESC';
+    const params = [];
+    db.all(sql,params,(err,rows)=>{
+        if(err){
+            res.status(400).json({"error":err.message});
+            next(err);
+            return;
+        }
+        res.json({
+            "message":"success",
+            "data":rows
+        })
+    });
+});
 
 /**
  * BASIC PHASE 3 - Retrieve one tree with the matching id
