@@ -11,6 +11,7 @@ const router = express.Router();
 const DATA_SOURCE = process.env.DATA_SOURCE;
 const sqlite3= require('sqlite3');
 const db=new sqlite3.Database(DATA_SOURCE,sqlite3.OPEN_READWRITE);
+router.use(express.json());
 
 /**
  * BASIC PHASE 2, Step B - List of all trees in the database
@@ -49,7 +50,20 @@ router.get('/',(req,res,next)=>{
  *   - Properties: id, tree, location, height_ft, ground_circumference_ft
  */
 // Your code here
-
+router.get('/:id',(req,res,next)=>{
+const sql = 'SELECT * FROM trees WHERE id = ?';
+const params = [req.params.id];
+db.get(sql,params,(err,row)=>{
+    if(err){
+        next(err);
+        return;
+    }
+    res.json({
+        "message":"success",
+        "data":row
+        })
+    });
+});
 /**
  * INTERMEDIATE PHASE 4 - INSERT tree row into the database
  *
@@ -61,7 +75,23 @@ router.get('/',(req,res,next)=>{
  *   - Value: success
  */
 // Your code here
-
+router.post('/',(req,res,next)=>{
+    const sql='INSERT INTO trees (name,location,height_ft,ground_circumference_ft) VALUES (?,?,?,?)';
+    const params=[req.body.name,req.body.location,req.body.height,req.body.size];
+    db.run(sql,params,(err)=>{
+        if(err){
+            res.status(400).json({"error":err.message});
+            next(err);
+            return;
+        }
+        res.json({
+            "message":"success",
+            "data":req.body,
+            "id":this.lastID
+        })
+    }
+    );
+});
 /**
  * INTERMEDIATE PHASE 5 - DELETE a tree row from the database
  *
