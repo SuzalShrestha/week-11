@@ -103,6 +103,22 @@ router.post('/',(req,res,next)=>{
  *   - Value: success
  */
 // Your code here
+router.delete('/:id',(req,res,next)=>{
+    const sql='DELETE FROM trees WHERE id = ?';
+    const params=[req.params.id];
+    db.run(sql,params,(err)=>{
+        if(err){
+            res.status(400).json({"error":err.message});
+            next(err);
+            return;
+        }
+        res.json({
+            "message":"success",
+            "data":req.body
+        })
+    }
+    );
+});
 
 /**
  * INTERMEDIATE PHASE 6 - UPDATE a tree row in the database
@@ -115,6 +131,22 @@ router.post('/',(req,res,next)=>{
  *   - Value: success
  */
 // Your code here
+router.put('/:id',(req,res,next)=>{
+    const sql='UPDATE trees SET name = ?,location = ?,height_ft = ?,ground_circumference_ft = ? WHERE id = ?';
+    const params=[req.body.name,req.body.location,req.body.height,req.body.size,req.params.id];
+    db.run(sql,params,(err)=>{
+        if(err){
+            res.status(400).json({"error":"ids don't match"});
+            next(err);
+            return;
+        }
+        res.json({
+            "message":"success",
+            "data":req.body
+        })
+    }
+    );
+});
 
 // Export class - DO NOT MODIFY
 module.exports = router;
