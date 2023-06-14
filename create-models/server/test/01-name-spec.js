@@ -10,20 +10,20 @@ describe('Colors Spec', async () => {
     describe('Color models has the correct constraints', async () => {
 
         it('The name of the color cannot be null', async () => {
-            await expect(models.Color.build({}).validate()).to.be.rejected
+            await expect(models.Colors.build({}).validate()).to.be.rejected
         });
 
         it('The color cannot be a non-string value', async () => {
-            await expect(models.Color.build({name: []}).validate()).to.be.rejected
+            await expect(models.Colors.build({name: []}).validate()).to.be.rejected
         });
 
         it('The color has a valid name', async () => {
-            await expect(models.Color.build({name: 'Purple'}).validate()).to.be.fulfilled
+            await expect(models.Colors.build({name: 'Purple'}).validate()).to.be.fulfilled
         });
 
         it('The colors are unique', async () => {
-            await expect(models.Color.create({name: 'Red'})).to.be.fulfilled
-            await expect(models.Color.create({name: 'Red'})).to.be.rejected
+            await expect(models.Colors.create({name: 'Red'})).to.be.fulfilled
+            await expect(models.Colors.create({name: 'Red'})).to.be.rejected
             const colors = await runSQLQuery("SELECT * FROM 'Colors';", DB_TEST_FILE);
             expect(colors).to.have.lengthOf(1);
         });

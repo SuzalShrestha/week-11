@@ -14,29 +14,10 @@ module.exports = (sequelize, DataTypes) => {
     }
   };
   Colors.init({
-    name: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      notNull: {
-        msg: 'Please enter a color'
-      },
-     //name attribute must be unique
-      isUnique: function (value, next) {
-        Colors.findOne({
-            where: {
-              name: value
-            }
-          })
-          .then((color) => {
-            if (color) {
-              return next('Color already in use!');
-            }
-            next();
-          })
-          .catch((err) => {
-            return next(err);
-          });
-      }
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique:true      
     }
   }, {
     sequelize,
