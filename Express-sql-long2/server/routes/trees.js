@@ -13,7 +13,7 @@ const { Tree } = require("../db/models");
  *   Import Op to perform comparison operations in WHERE clauses
  **/
 // Your code here
-  const { Op } = require("sequelize");
+const { Op } = require("sequelize");
 /**
  * BASIC PHASE 1, Step B - List of all trees in the database
  *
@@ -30,7 +30,7 @@ router.get("/", async (req, res, next) => {
   // Your code here
   const allTrees = await Tree.findAll({
     attributes: ["heightFt", "tree", "id"],
-    order: [["heightFt", "DESC"]]
+    order: [["heightFt", "DESC"]],
   });
   trees.push(...allTrees);
   res.json(trees);
@@ -50,11 +50,11 @@ router.get("/:id", async (req, res, next) => {
 
   try {
     // Your code here
-    const tree=await Tree.findOne({
+    const tree = await Tree.findOne({
       where: {
-        id: req.params.id
-      }
-    })
+        id: req.params.id,
+      },
+    });
 
     if (tree) {
       res.json(tree);
@@ -95,22 +95,22 @@ router.get("/:id", async (req, res, next) => {
 router.post("/", async (req, res, next) => {
   try {
     // Your code here
-    const newTree=await Tree.create({
+    const newTree = await Tree.create({
       tree: req.body.name,
       location: req.body.location,
       heightFt: req.body.height,
-      groundCircumferenceFt: req.body.size
+      groundCircumferenceFt: req.body.size,
     });
     newTree.save();
-    enteredTree=await Tree.findOne({
+    enteredTree = await Tree.findOne({
       where: {
-        tree: req.body.name
-      }
+        tree: req.body.name,
+      },
     });
     res.json({
       status: "success",
       message: "Successfully created new tree",
-      data: enteredTree
+      data: enteredTree,
     });
   } catch (err) {
     next({
@@ -146,12 +146,12 @@ router.post("/", async (req, res, next) => {
 router.delete("/:id", async (req, res, next) => {
   try {
     // Your code here
-    const tree=await Tree.findOne({
+    const tree = await Tree.findOne({
       where: {
-        id: req.params.id
-      }
+        id: req.params.id,
+      },
     });
-    if(!tree){
+    if (!tree) {
       next({
         status: "not-found",
         message: `Could not remove tree ${req.params.id}`,
@@ -211,6 +211,40 @@ router.delete("/:id", async (req, res, next) => {
 router.put("/:id", async (req, res, next) => {
   try {
     // Your code here
+    const tree = await Tree.findOne({
+      where: {
+        id: req.params.id,
+      },
+    });
+
+    if (tree) {
+      //if tree id doesnot match
+      if (tree.id === req.body.id) {
+        tree.id = req.body.id;
+        tree.tree = req.body.name;
+        tree.location = req.body.location;
+        tree.heightFt = req.body.height;
+        tree.groundCircumferenceFt = req.body.size;
+        tree.save();
+        res.json({
+          status: "success",
+          message: "Successfully updated tree",
+          data: tree,
+        });
+      } else {
+        next({
+          status: "error",
+          message: `Could not update tree`,
+          details: `${req.params.id} does not match ${req.body.id}`,
+        });
+      }
+    }else{
+      next({
+        status: "not-found",
+        message: `Could not update tree ${req.params.id}`,
+        details: "Tree not found",
+      });
+    }
   } catch (err) {
     next({
       status: "error",
