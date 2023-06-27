@@ -51,8 +51,8 @@ router.get("/:id", async (req, res, next) => {
 
   try {
     // Your code here
-    const data=await Tree.findByPk(req.params.id);
-    data?tree=data.dataValues:tree=null;
+    const data = await Tree.findByPk(req.params.id);
+    data ? (tree = data.dataValues) : (tree = null);
 
     if (tree) {
       res.json(tree);
@@ -92,9 +92,22 @@ router.get("/:id", async (req, res, next) => {
  */
 router.post("/", async (req, res, next) => {
   try {
+    // Your code here
+    await Tree.create({
+      tree: req.body.name,
+      location: req.body.location,
+      heightFt: req.body.height,
+      groundCircumferenceFt: req.body.size,
+    });
+    const data = await Tree.findOne({
+      where: {
+        tree: req.body.name,
+      },
+    });
     res.json({
       status: "success",
       message: "Successfully created new tree",
+      data: data,
     });
   } catch (err) {
     next({
