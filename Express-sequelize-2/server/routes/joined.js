@@ -1,9 +1,9 @@
 // Instantiate router - DO NOT MODIFY
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 
 // Import models - DO NOT MODIFY
-const { Insect, Tree } = require('../db/models');
+const { Insect, Tree } = require("../db/models");
 const { Op } = require("sequelize");
 
 /**
@@ -19,14 +19,33 @@ const { Op } = require("sequelize");
  *   - Insect properties: id, name
  *   - Insects for each tree ordered alphabetically by name
  */
-router.get('/trees-insects', async (req, res, next) => {
-    let trees = [];
+router.get("/trees-insects", async (req, res, next) => {
+  let trees = [];
 
-    trees = await Tree.findAll({
-        attributes: ['id', 'tree', 'location', 'heightFt'],
-    });
+  trees = await Tree.findAll({
+    attributes: ["id", "tree", "location", "heightFt"],
+    include: [
+      {
+        model: Insect,
+        attributes: ["id", "name"],
+        through: {
+          attributes: [],
+        },
+        //omit insects with no trees
+        where: {
+          id: {
+            [Op.ne]: null,
+          },
+        },
+      },
+    ],
+    order: [
+      ["heightFt", "DESC"],
+      [Insect, "name", "ASC"],
+    ],
+  });
 
-    res.json(trees);
+  res.json(trees);
 });
 
 /**
@@ -42,23 +61,27 @@ router.get('/trees-insects', async (req, res, next) => {
  *   - Tree properties: id, tree
  *   - Trees ordered alphabetically by tree
  */
-router.get('/insects-trees', async (req, res, next) => {
-    let payload = [];
+router.get("/insects-trees", async (req, res, next) => {
+  let payload = [];
 
-    const insects = await Insect.findAll({
-        attributes: ['id', 'name', 'description'],
-        order: [ ['name'] ],
+  const insects = await Insect.findAll({
+    attributes: ["id", "name", "description"],
+    order: [["name"]],    
+  });
+  for (let i = 0; i < insects.length; i++) {
+    const insect = insects[i];
+    payload.push({
+      id: insect.id,
+      name: insect.name,
+      description: insect.description,
+        trees: await insect.getTrees({
+            attributes: ["id", "tree"],
+            order: [["tree"]],
+        }),
     });
-    for (let i = 0; i < insects.length; i++) {
-        const insect = insects[i];
-        payload.push({
-            id: insect.id,
-            name: insect.name,
-            description: insect.description,
-        });
-    }
+  }
 
-    res.json(payload);
+  res.json(payload);
 });
 
 /**
@@ -89,6 +112,7 @@ router.get('/insects-trees', async (req, res, next) => {
  *   - (Any others you think of)
  */
 // Your code here
+
 
 // Export class - DO NOT MODIFY
 module.exports = router;
