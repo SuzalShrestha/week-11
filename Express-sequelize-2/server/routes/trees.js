@@ -258,7 +258,25 @@ router.put("/:id", async (req, res, next) => {
  */
 router.get("/search/:value", async (req, res, next) => {
   let trees = [];
-
+  try {
+    // Your code here
+    trees = await Tree.findAll({
+      where: {
+        tree: {
+          [Op.like]: `%${req.params.value}%`
+        }
+      },
+      order: [["heightFt", "DESC"]]
+    });
+  } catch (err) {
+    next({
+      status: "error",
+      message: "Could not retrieve trees",
+      details: err.errors
+        ? err.errors.map((item) => item.message).join(", ")
+        : err.message,
+    });
+  }
   res.json(trees);
 });
 
