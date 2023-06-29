@@ -5,6 +5,7 @@ const router = express.Router();
 // Import models - DO NOT MODIFY
 const { Insect, Tree } = require("../db/models");
 const { Op } = require("sequelize");
+const { c } = require("compile-run");
 
 /**
  * PHASE 7 - Step A: List of all trees with insects that are near them
@@ -66,7 +67,7 @@ router.get("/insects-trees", async (req, res, next) => {
 
   const insects = await Insect.findAll({
     attributes: ["id", "name", "description"],
-    order: [["name"]],    
+    order: [["name"]],
   });
   for (let i = 0; i < insects.length; i++) {
     const insect = insects[i];
@@ -74,10 +75,10 @@ router.get("/insects-trees", async (req, res, next) => {
       id: insect.id,
       name: insect.name,
       description: insect.description,
-        trees: await insect.getTrees({
-            attributes: ["id", "tree"],
-            order: [["tree"]],
-        }),
+      trees: await insect.getTrees({
+        attributes: ["id", "tree"],
+        order: [["tree"]],
+      }),
     });
   }
 
@@ -112,7 +113,92 @@ router.get("/insects-trees", async (req, res, next) => {
  *   - (Any others you think of)
  */
 // Your code here
+router.post("/associate-tree-insect", async (req, res, next) => {
+  const { tree, insect } = req.body;
+  //handle tree
+  const handleTree = async (tree) => {
+    if (!tree) {
+      res.status(400).json({
+        status: "error",
+        message: "Missing tree",
+      });
+    }
+    if (tree.id) {
+      const foundTree = await Tree.findByPk(tree.id);
+      if (!foundTree) {
+        res.status(400).json({
+          status: "error",
+          message: "Tree not found",
+        });
+      }
+    }
+  };
 
+  //handle insect
+  const handleInsect = async (insect) => {
+    if (!insect) {
+      res.status(400).json({
+        status: "error",
+        message: "Missing insect",
+      });
+    }
+    if (insect.id) {
+      const foundInsect = await Insect.findByPk(insect.id);
+      if (!foundInsect) {
+        res.status(400).json({
+          status: "error",
+          message: "Insect not found",
+        });
+      }
+    }
+  };
+  //handle association
+  const handleAssociation = async (tree, insect) => {
+    try {
+      const foundTree = await Tree.findByPk(tree.id);
+      const foundInsect = await Insect.findByPk(insect.id);
+      if (foundInsect && foundTree) {
+        res.json({
+          status: "Special Message",
+          message: `Association already exists between ${foundTree.tree} and ${foundInsect.name}`,
+        });
+        return;
+      }
+
+      const newTree = await Tree.create({
+        tree: tree.name,
+        location: tree.location,
+        heightFt: tree.heightFt,
+        groundCircumferenceIn: tree.size,
+      });
+      const newInsect = await Insect.create({
+        name: insect.name,
+        description: insect.description,
+        fact: insect.fact,
+        territory: insect.territory,
+        millimeters: insect.millimeters,
+      });
+      await newTree.addInsect(newInsect);
+      res.json({
+        status: "success",
+        message: "Successfully created association",
+        data: {
+          tree: newTree,
+          insect: newInsect,
+        },
+      });
+      return;
+    } catch (error) {
+      res.status(400).json({
+        status: "error",
+        message: error.message,
+      });
+    }
+  };
+  await handleTree(tree);
+  await handleInsect(insect);
+  await handleAssociation(tree, insect);
+});
 
 // Export class - DO NOT MODIFY
 module.exports = router;
