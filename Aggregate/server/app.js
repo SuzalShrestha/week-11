@@ -62,20 +62,21 @@ app.get('/cats/:id/toys', async (req, res, next) => {
             model: Toy,
             attributes: []
         },
-        attributes: [
+        attributes: {
             // Count all of this cat's toys, and display the value with a
             // key of `toyCount`
             // Your code here
-            [sequelize.fn('COUNT', sequelize.col('toy.id')), 'toyCount'],
+           include:[[sequelize.fn('COUNT', sequelize.col('toys.id')), 'toyCount'],
             // Find the average price of this cat's toys, and display the
             // value with a key of `averageToyPrice`
             // Your code here
-            [sequelize.fn('AVG', sequelize.col('toy.price')), 'averageToyPrice']
+            [sequelize.fn('AVG', sequelize.col('toys.price')), 'averageToyPrice'],
             // Find the total price of this cat's toys, and display the
             // value with a key of `totalToyPrice`
             // Your code here
-            [sequelize.fn('SUM', sequelize.col('toy.price')), 'totalToyPrice']
-        ],
+            [sequelize.fn('SUM', sequelize.col('toys.price')), 'totalToyPrice']
+            
+    ]}   ,
         raw: true
     });
 
@@ -106,6 +107,9 @@ app.get('/cats/:id/toys', async (req, res, next) => {
 // BONUS STEP: Create an endpoint for GET /data-summary that includes a summary
 // of all the aggregate data according to spec
 // Your code here
+app.get('/data-summary', async (req, res, next) => {
+        
+});
 
 
 
@@ -117,5 +121,5 @@ app.get('/', (req, res) => {
 });
 
 // Set port and listen for incoming requests - DO NOT MODIFY
-const port = 5000;
+const port = 8000;
 app.listen(port, () => console.log('Server is listening on port', port));
