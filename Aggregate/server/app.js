@@ -108,7 +108,37 @@ app.get('/cats/:id/toys', async (req, res, next) => {
 // of all the aggregate data according to spec
 // Your code here
 app.get('/data-summary', async (req, res, next) => {
-        
+        const totalCats = await Cat.count();
+        const totalToys = await Toy.count();
+        const toySummary= await Toy.findAll({
+            
+            attributes: [
+                
+                    [sequelize.fn("AVG", sequelize.col("price")), "averagePriceOfAToy"],
+                    [sequelize.fn("SUM", sequelize.col("price")), "totalPriceOfAllToys"],
+                    [sequelize.fn("MAX", sequelize.col("price")), "maximumToyPrice"],
+                    [sequelize.fn("MIN", sequelize.col("price")), "minimumToyPrice"]
+                
+            ]
+        });
+        const expensiveToySummary = await Toy.findAll({
+            where:{
+                price:{
+                    [Op.gt]: 55
+                }
+            },
+            attributes: [
+                
+                    [sequelize.fn("AVG", sequelize.col("price")), "averagePriceOfAnExpensiveToy"],
+                ]
+            
+        });
+        const data={}
+        data.totalNumberOfCats = totalCats;
+        data.totalNumberOfToys = totalToys;
+        data.toySummary = toySummary;
+        data.expensiveToySummary = expensiveToySummary;
+        res.json({data});
 });
 
 
