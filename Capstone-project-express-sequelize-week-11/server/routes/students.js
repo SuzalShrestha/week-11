@@ -12,12 +12,24 @@ router.get('/', async (req, res, next) => {
 
     // Phase 2A: Use query params for page & size
     // Your code here
-
+    const {page,size}=req.query;
+    
     // Phase 2B: Calculate limit and offset
     // Phase 2B (optional): Special case to return all students (page=0, size=0)
     // Phase 2B: Add an error message to errorResult.errors of
-        // 'Requires valid page and size params' when page or size is invalid
+    // 'Requires valid page and size params' when page or size is invalid
     // Your code here
+    
+    if( (page && isNaN(page)) || (size && isNaN(size)) ){
+        errorResult.errors.push({message:'Requires valid page and size params'});
+    }
+
+    }
+    if(page===0 && size===0) res.json(Student.findAll({
+        attributes:['firstName','lastName','leftHanded','seededBy']
+    }));
+    const limit=size?size:10;
+    const offset=page?page*limit:1;
 
     // Phase 4: Student Search Filters
     /*
@@ -48,6 +60,10 @@ router.get('/', async (req, res, next) => {
 
 
     // Phase 2C: Handle invalid params with "Bad Request" response
+    if(errorResult.errors.length!==0) {
+        res.status(400).json(errorResult);
+    return;
+}
     // Phase 3C: Include total student count in the response even if params were
         // invalid
         /*
@@ -74,7 +90,9 @@ router.get('/', async (req, res, next) => {
         attributes: ['id', 'firstName', 'lastName', 'leftHanded'],
         where,
         // Phase 1A: Order the Students search results
-        order:[['firstName','ASC'],['lastName','ASC']]
+        order:[['firstName','ASC'],['lastName','ASC']],
+        limit:limit,
+        offset:offset
     });
 
     // Phase 2E: Include the page number as a key of page in the response data
