@@ -13,23 +13,33 @@ router.get('/', async (req, res, next) => {
     // Phase 2A: Use query params for page & size
     // Your code here
     const {page,size}=req.query;
+    //default values of page 1 and size 10
+    if(page===undefined)page=1;
+    if(size===undefined)size=10;
+    //if page is not number then use default value
+    if(isNaN(page))page=1;
+    if(isNaN(size))size=10;
+    
     
     // Phase 2B: Calculate limit and offset
     // Phase 2B (optional): Special case to return all students (page=0, size=0)
     // Phase 2B: Add an error message to errorResult.errors of
     // 'Requires valid page and size params' when page or size is invalid
     // Your code here
-    
-    if( (page && isNaN(page)) || (size && isNaN(size)) ){
+    //check if page and size are valid
+    if(page===0&&size===0){
+        res.json(await Student.findAll({
+            attributes: ['id', 'firstName', 'lastName', 'leftHanded'],
+            order:[['firstName','ASC'],['lastName','ASC']]
+        }));
+        return;
+    }
+    if(page<0||size<0){
         errorResult.errors.push({message:'Requires valid page and size params'});
     }
-
-    }
-    if(page===0 && size===0) res.json(Student.findAll({
-        attributes:['firstName','lastName','leftHanded','seededBy']
-    }));
-    const limit=size?size:10;
-    const offset=page?page*limit:1;
+    const limit=size;
+    const offset=(page-1)*size;
+    
 
     // Phase 4: Student Search Filters
     /*
@@ -60,10 +70,10 @@ router.get('/', async (req, res, next) => {
 
 
     // Phase 2C: Handle invalid params with "Bad Request" response
-    if(errorResult.errors.length!==0) {
-        res.status(400).json(errorResult);
-    return;
-}
+        if(errorResult.errors.length>0){
+            res.status(400).json(errorResult);
+            return;
+        }
     // Phase 3C: Include total student count in the response even if params were
         // invalid
         /*
