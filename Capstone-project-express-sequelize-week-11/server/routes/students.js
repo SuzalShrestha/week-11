@@ -42,7 +42,7 @@ router.get('/', async (req, res, next) => {
         return;
     }
     //added additional check for page and size
-    if((page<0||size<0)||(!isNaN(page)||!isNaN(size))){
+    if((page<0||size<0)||(isNaN(page)||isNaN(size))){
         errorResult.errors.push({message:'Requires valid page and size params'});
     }
     const limit=size;
@@ -75,6 +75,23 @@ router.get('/', async (req, res, next) => {
     const where = {};
 
     // Your code here
+    if(req.query.firstName){
+        where.firstName={
+            [Op.like]:`%${req.query.firstName}%`
+        }
+    }
+    if(req.query.lastName){
+        where.lastName={
+            [Op.like]:`%${req.query.lastName}%`
+        }
+    }
+    if(req.query.lefty==='true'){
+        where.leftHanded=true;
+    }else if(req.query.lefty==='false'){
+        where.leftHanded=false;
+    }else if(req.query.lefty!==undefined){
+        errorResult.errors.push({message:'Lefty should be either true or false'});
+    }
 
 
     // Phase 2C: Handle invalid params with "Bad Request" response
@@ -106,7 +123,9 @@ router.get('/', async (req, res, next) => {
     // Phase 3A: Include total number of results returned from the query without
         // limits and offsets as a property of count on the result
         // Note: This should be a new query
-        const count = await Student.count();
+        const count = await Student.count({
+            where
+        });
         result.count = count;
 
 
