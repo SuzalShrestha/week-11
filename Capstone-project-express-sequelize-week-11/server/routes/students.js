@@ -12,7 +12,7 @@ router.get('/', async (req, res, next) => {
 
     // Phase 2A: Use query params for page & size
     // Your code here
-    const {page,size}=req.query;
+    let {page,size}=req.query;
     //default values of page 1 and size 10
     if(page===undefined)page=1;
     if(size===undefined)size=10;
@@ -27,11 +27,18 @@ router.get('/', async (req, res, next) => {
     // 'Requires valid page and size params' when page or size is invalid
     // Your code here
     //check if page and size are valid
-    if(page===0&&size===0){
-        res.json(await Student.findAll({
+    if(page==0&&size==0){
+        let newResult={};
+        let rows=await Student.findAll({
             attributes: ['id', 'firstName', 'lastName', 'leftHanded'],
-            order:[['firstName','ASC'],['lastName','ASC']]
-        }));
+            order:[['firstName','ASC'],['lastName','ASC']],
+            limit:1000,
+            offset:0
+        })
+        newResult.rows=rows;
+        newResult.page=1;
+        console.log(newResult);
+        res.json(newResult);
         return;
     }
     if(page<0||size<0){
@@ -116,8 +123,7 @@ router.get('/', async (req, res, next) => {
             }
         */
     // Your code here
-    if(page===0)page=1;
-    result.page=page;
+    if(page==0) result.page=1;
 
     // Phase 3B:
         // Include the total number of available pages for this query as a key
