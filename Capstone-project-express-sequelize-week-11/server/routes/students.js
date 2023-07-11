@@ -41,7 +41,8 @@ router.get('/', async (req, res, next) => {
         res.json(newResult);
         return;
     }
-    if(page<0||size<0){
+    //added additional check for page and size
+    if((page<0||size<0)||(!isNaN(page)||!isNaN(size))){
         errorResult.errors.push({message:'Requires valid page and size params'});
     }
     const limit=size;
@@ -78,9 +79,8 @@ router.get('/', async (req, res, next) => {
 
     // Phase 2C: Handle invalid params with "Bad Request" response
         if(errorResult.errors.length>0){
-            res.status(400).json(errorResult);
-            return;
-        }
+            
+           
     // Phase 3C: Include total student count in the response even if params were
         // invalid
         /*
@@ -96,12 +96,19 @@ router.get('/', async (req, res, next) => {
                 }
         */
     // Your code here
-
+    errorResult.count=await Student.count();
+    errorResult.pageCount=Math.ceil(errorResult.count/size);
+    res.status(400).json(errorResult);
+    return;
+}
     let result = {};
 
     // Phase 3A: Include total number of results returned from the query without
         // limits and offsets as a property of count on the result
         // Note: This should be a new query
+        const count = await Student.count();
+        result.count = count;
+
 
     result.rows = await Student.findAll({
         attributes: ['id', 'firstName', 'lastName', 'leftHanded'],
@@ -140,6 +147,7 @@ router.get('/', async (req, res, next) => {
             }
         */
     // Your code here
+    result.pageCount=Math.ceil(result.count/size);
 
     res.json(result);
 });
