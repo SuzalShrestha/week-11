@@ -82,7 +82,7 @@ router.get("/", async (req, res, next) => {
 // Single classroom
 router.get("/:id", async (req, res, next) => {
   let classroom = await Classroom.findByPk(req.params.id, {
-    attributes: ["id", "name", "studentLimit"],
+    attributes: ["name", "studentLimit"],
     // Phase 7:
     // Include classroom supplies and order supplies by category then
     // name (both in ascending order)
@@ -128,7 +128,7 @@ router.get("/:id", async (req, res, next) => {
     },
   });
   classroom.supplies = await Supply.findAll({
-    attributes: ["id", "name", "category"],
+    attributes: ["name", "category"],
     where: {
       classroomId: req.params.id,
     },
@@ -142,7 +142,7 @@ router.get("/:id", async (req, res, next) => {
     include: [
       {
         model: Student,
-        attributes: ["id", "firstName", "lastName"],
+        attributes: ["firstName", "lastName"],
       },
       {
         model: Classroom,

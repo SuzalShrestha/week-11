@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 // Import model(s)
-const { Student } = require("../db/models");
+const { Student, StudentClassroom, Classroom } = require("../db/models");
 const { Op } = require("sequelize");
 
 // List
@@ -131,8 +131,18 @@ router.get("/", async (req, res, next) => {
   result.rows = await Student.findAll({
     attributes: ["id", "firstName", "lastName", "leftHanded"],
     where,
+    include: [
+      {
+        model: Classroom,
+        attributes: ["id", "name"],
+        through: {
+          attributes: ["grade"],
+        },
+      },
+    ],
     // Phase 1A: Order the Students search results
     order: [
+      [Classroom, StudentClassroom, "grade", "DESC"],
       ["firstName", "ASC"],
       ["lastName", "ASC"],
     ],
@@ -169,7 +179,6 @@ router.get("/", async (req, res, next) => {
         */
   // Your code here
   result.pageCount = Math.ceil(result.count / size);
-
   res.json(result);
 });
 
