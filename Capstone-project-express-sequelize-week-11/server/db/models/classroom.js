@@ -34,6 +34,7 @@ module.exports = (sequelize, DataTypes) => {
       // Phase 5: Alternate solution 3
       // Your code here
       supplyId: DataTypes.INTEGER,
+      studentId: DataTypes.INTEGER,
     },
     {
       sequelize,

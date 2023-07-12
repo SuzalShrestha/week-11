@@ -3,7 +3,12 @@ const express = require("express");
 const router = express.Router();
 
 // Import model(s)
-const { Classroom, Supply, StudentClassroom } = require("../db/models");
+const {
+  Classroom,
+  Supply,
+  StudentClassroom,
+  Student,
+} = require("../db/models");
 const { Op } = require("sequelize");
 const sequelize = require("sequelize");
 
@@ -122,6 +127,35 @@ router.get("/:id", async (req, res, next) => {
       classroomId: req.params.id,
     },
   });
+  classroom.supplies = await Supply.findAll({
+    attributes: ["id", "name", "category"],
+    where: {
+      classroomId: req.params.id,
+    },
+    order: [
+      ["category", "ASC"],
+      ["name", "ASC"],
+    ],
+    raw: true,
+  });
+  const students = await StudentClassroom.findAll({
+    include: [
+      {
+        model: Student,
+        attributes: ["id", "firstName", "lastName"],
+      },
+      {
+        model: Classroom,
+        attributes: [],
+        where: {
+          id: req.params.id,
+        },
+      },
+    ],
+    attributes: [],
+  });
+  classroom.students = students.map((student) => student.Student);
+
   res.json(classroom);
 });
 
